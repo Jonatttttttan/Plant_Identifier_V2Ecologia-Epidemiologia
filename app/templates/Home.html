@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container my-5">
+   <div class="text-center mb5">
+      <h1 class="display-5 fw-bold text-success">🌱 AngioXip</h1>
+      <p class="lead text-muted">Bem-vindo ao sistema de cadastro e identificação de plantas <strong>Angiospermas</strong></p>
+
+   </div>
+
+   <div class="row justify-content-center g-4">
+      <div class="col-md-5">
+         <div class="card text-center shadow-sm border-success">
+            <div class="card-body">
+               <h5 class="card-title text-success">📋 Banco de Dados dos Organismos Cadastrados</h5>
+               <p class="card text">Visualize, edite ou remova organismos cadastradas</p>
+               <a class="btn btn-outline-success" href="{{ url_for('main.index') }}">Acessar Banco</a>
+            </div>
+         </div>
+      </div>
+
+   </div>
+   <div class="text-center mt5">
+   </div>
+</div>
+
+
+
+<!--<div class="container-sm">
+<div class="sticky-lg-bottom p-2">
+<H1 class="p-3 mb-2 bg-success-subtle text-success-emphasis">Tela de Início da aplicação</H1>
+<a class="icon-link btn btn-success" href="{{ url_for('main.index') }}">Banco de Dados</a>
+</div>
+<div class="sticky-lg-bottom">
+<a class="btn btn-info" href="{{ url_for('identificar.identificar') }}">
+   Identificar Planta Desconhecida por IA</a>
+</div>
+</div>-->
+{% endblock %}

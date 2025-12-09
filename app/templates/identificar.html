@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Identificar planta por imagem e local</h2>
+
+
+<form method="POST" enctype="multipart/form-data">
+    <div class="mb-3">
+    <label>Envie a imagem da planta:</label>
+        <input type="file" name="imagem" accept="image/*" required></div>
+    <div class="mb-3">
+        <label for="estado">Estado:</label>
+        <select id="estado" name="estado" class="form-select" required></select>
+
+    </div>
+
+    <div class="mb-3">
+        <label for="municipio">Município:</label>
+        <select id="municipio" name="municipio" class="form-select" required></select>
+
+    </div>
+    <button type="submit">Identificar</button>
+
+</form>
+
+<script>
+    fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome')
+        .then(res => res.json())
+        .then(estados => {
+            const selectEstado = document.querySelector('#estado');
+            estados.forEach(estado => {
+                const option = document.createElement('option');
+                option.value = estado.id;
+                option.textContent = estado.nome;
+                selectEstado.appendChild(option);
+            });
+
+            selectEstado.addEventListener('change', () => {
+                const estadoId = selectEstado.value;
+                fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estadoId}/municipios`)
+                    .then(res => res.json())
+                    .then(municipios => {
+                        const selectMunicipio = document.querySelector('#municipio');
+                        selectMunicipio.innerHTML = '<option value="">Selecione um município</option>';
+                        municipios.forEach(mun => {
+                            const option = document.createElement('option');
+                            option.value = mun.id;
+                            option.textContent = mun.nome;
+                            selectMunicipio.appendChild(option);
+                        });
+                    });
+             });
+         });
+
+</script>
+
+{% endblock %}

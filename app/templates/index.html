@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container my-5">
+<div class="d-flex justify-content-between flex-wrap mb-4 gap-3">
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-success" href="{{ url_for('main.adicionar') }}">➕ Adicionar Organismo</a>
+        <a class="btn btn-info" href="{{ url_for('service.mapa') }}">🗺️ Ver no Mapa</a>
+
+    </div>
+    <form method="get" action="{{ url_for('main.gerar_relatorio_excel') }}">
+        <input type="hidden" name="grupo" value="{{ grupo_atual }}">
+        <button class="btn btn-outline-success" type="submit">⬇️ Baixar Excel</button>
+
+    </form>
+
+</div>
+    <! Filtros -->
+    <form class="row g-3 mb-4 bg-light p-3 rounded shadow-sm" method="get" action="{{ url_for('main.index') }}">
+        <div class=" col-md-4">
+            <label for="grupo" class="form-label">Grupo</label>
+            <select class="form-select" name="grupo">
+                <option value="">Todos</option>
+                <option value="planta" {% if grupo_atual == planta %}selected{% endif %}>Planta</option>
+                <option value="artropode" {% if grupo_atual == artropode %}selected{% endif %}>Artrópode</option>
+                <option value="animal" {% if grupo_atual == animal %}selected{% endif %}>Animal</option>
+                <option value="outros" {% if grupo_atual == outros %}selected{% endif %}>Outros</option>
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <label for="localizacao" class="form-label">Localização</label>
+            <select class="form-select" name="localizacao">
+                <option value="">Todas</option>
+                {% for loc in localizacoes %}
+                <option value="{{ loc }}" {% if localizacao_atual == loc %}selected{% endif %}>{{ loc }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <button class="btn btn-primary w-100" type="submit">🔍 Filtrar</button>
+
+        </div>
+
+    </form>
+    <!-- Tabela -->
+    <div class="table-responsive shadow-sm rounded">
+        <table class="table table-bordered table-hovr align-middle text-center">
+            <thead class="table-dark">
+            <tr>
+                <th>Espécie</th>
+                <th>Família</th>
+                <th>Nome Popular</th>
+                <th>Habitat</th>
+                <th>Localização</th>
+                <th>Situação</th>
+                <th>Grupo</th>
+                <th colspan="3">Ações</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for planta in plantas %}
+            <tr>
+                <td>{{ planta.especie }}</td>
+                <td>{{ planta.familia }}</td>
+                <td>{{ planta.nome_popular }}</td>
+                <td>{{ planta.habitat }}</td>
+                <td>{{ planta.localizacao }}</td>
+                <td>{{ planta.situacao }}</td>
+                <td>{{ planta.grupo }}</td>
+                <td>
+                    <a href="{{url_for('main.editar', id=planta.id) }}" class="btn btn-sm btn-outline-primary">✏️ Editar</a>
+
+                </td>
+                <td>
+                    <form action="{{ url_for('main.deletar', id=planta.id) }}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza que deseja excluir?')">🗑️ Deletar</button>
+
+                    </form>
+                </td>
+                <td>
+                    <a href="{{url_for('main.info', id=planta.id) }}" class="btn btn-sm btn-outline-primary">Informações</a>
+                </td>
+            </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginação -->
+    <nav aria-label="Paginação de organismos" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('main.index', page=page - 1, grupo=grupo_atual, localizacao=localizacao_atual, q=request.args.get('q')) }}">Anterior</a>
+
+            </li>
+            {% endif %}
+
+            {% for p in range(1, total_pages + 1) %}
+            <li class="page-item {% if p == page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('main.index', page=p, grupo=grupo_atual, localizacao=localizacao_atual, q=request.args.get('q')) }}">{{ p }}</a>
+
+            </li>
+            {% endfor %}
+
+            {% if page < total_pages %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('main.index', page=page + 1, grupo=grupo_atual, localizacao=localizacao_atual, q=request.args.get('q')) }}">Próximo</a>
+
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+
+
+</div>
+{% endblock %}

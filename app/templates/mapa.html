@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <title>Mapa dos Organismos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Necessário para o mapa aparecer -->
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" /> <!-- Link do mapa -->
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+    #map {
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  var map = L.map('map').setView([-15.77972, -47.92972], 4);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+
+  var pontos = {{ pontos | tojson | safe }};
+  console.log("Pontos recebidos:", pontos);
+
+  pontos.forEach(function(ponto) {
+    const lat = parseFloat(ponto.latitude);
+    const lon = parseFloat(ponto.longitude);
+
+    if (!isNaN(lat) && !isNaN(lon)) {
+      L.marker([lat, lon])
+        .addTo(map)
+        .bindPopup(`<strong>${ponto.especie}</strong>`);
+    }
+  });
+</script>
+
+</body>
+</html>

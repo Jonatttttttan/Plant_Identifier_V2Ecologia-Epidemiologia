@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Cadastre-se</h1>
+<form method="POST">
+    <div class="mb-3">
+    <label>Insira seu usuário</label>
+    <input type="text" name="username" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+        <label>Insira sua senha</label>
+        <input type="password" name="password" class="form-control" required>
+
+    </div>
+    <button type="submit" class="btn btn-primary">Registrar</button>
+
+</form>
+
+{% endblock %}

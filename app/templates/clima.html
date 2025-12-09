@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 500px;">
+
+    <h2 class="text-center mb-4">Consulta de Clima (Open-Meteo)</h2>
+
+    <form method="POST" class="card p-4 shadow-sm">
+        <div class="mb-3">
+            <label class="form-label">Latitude</label>
+            <input
+                type="text"
+                name="latitude"
+                class="form-control"
+                placeholder="-15.8"
+                value="{{ latitude or '' }}"
+                required
+            >
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Longitude</label>
+            <input
+                type="text"
+                name="longitude"
+                class="form-control"
+                placeholder="-47.9"
+                value="{{ longitude or '' }}"
+                required
+            >
+        </div>
+
+        <button class="btn btn-primary w-100">Consultar clima</button>
+    </form>
+
+    {% if erro %}
+    <div class="alert alert-danger mt-4">{{ erro }}</div>
+    {% endif %}
+
+    {% if clima %}
+    <div class="card mt-4 shadow-sm">
+        <div class="card-body text-center">
+            <h5 class="card-title mb-3">Clima atual</h5>
+            <p class="mb-1">
+                <strong>Temperatura:</strong> {{ clima.temperature }} °C
+            </p>
+            <p class="mb-1">
+                <strong>Vento:</strong> {{ clima.windspeed }} km/h
+                ({{ clima.winddirection }}°)
+            </p>
+            <p class="mb-1">
+                <strong>Código de tempo:</strong> {{ clima.weathercode }}
+            </p>
+            <p class="mb-1">
+                Altitude: {{ clima.elevation }}
+            </p>
+            <p class="mb-1>">
+                Timezone: {{ clima.timezone }}
+            </p>
+            <p class="text-muted small mb-0">
+                Atualizado em: {{ clima.time }}
+            </p>
+
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

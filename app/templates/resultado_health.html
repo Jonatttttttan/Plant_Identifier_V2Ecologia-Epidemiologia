@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Resultado do Diagnóstico</h2>
+<img src="{{ url_for('static', filename='uploads/' + imagem) }}" width="300">
+
+{% if sugestoes %}
+<ul>
+    {% for s in sugestoes %}
+    <li
+        <strong>Planta:</strong> {{ s.name }} <br>
+        <strong>Probabilidade:</strong> {{ '%.2f'|format(s.probability * 100) }}%<br>
+        <a href="{{ s.wiki }}" target="_blank">Mais informações</a>
+
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>Nenhum diagnóstico encontrado.</p>
+{% endif %}
+{% endblock %}

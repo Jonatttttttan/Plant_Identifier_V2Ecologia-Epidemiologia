@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Editar plantas</h2>
+<form method="post" enctype="multipart/form-data">
+    <p>Espécie<input type="text" name="especie" value="{{planta.especie}}" required></p>
+    <p>Família <input type="text" name="familia" value="{{planta.familia}}"></p>
+    <p>Nome popular <input type="text" name="nome_popular" value="{{planta.nome_popular}}"></p>
+    <p>Habitat <input type="text" name="habitat" value="{{planta.habitat}}" required></p>
+    <p>Localização: <input type="text" name="localizacao" value="{{planta.localizacao}}" required></p>
+    <p>Descrição <input type="text" name="descricao" value="{{planta.descricao}}" required></p>
+    <p><input type="submit" value="Atualizar"></p>
+
+
+</form>
+<a href="{{url_for('main.index')}}">Voltar</a>
+{% endblock %}
+

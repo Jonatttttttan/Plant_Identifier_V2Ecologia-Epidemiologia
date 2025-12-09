@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Resultado da identificação de aves</h2>
+<p><strong>Nome popular:</strong>{{ nome_comum }}</p>
+<p><strong>Nome científico:</strong>{{ nome_cientifico }}</p>
+<p><strong>confiança:</strong>{{ confianca }}%</p>
+
+<a href="{{ url_for('identificar.identificar_plantas2' }}">Voltar</a>
+{% endblock %}

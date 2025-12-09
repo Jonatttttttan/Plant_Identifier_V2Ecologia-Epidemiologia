@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Resultado da Identificação</h2>
+<p><strong>Imagem enviada:</strong></p>
+<img src="{{ url_for('static', filename='uploads/' + imagem) }}" class="img-thumbnail mb-4" width="300">
+
+{% if sugestoes %}
+<ul class="list-group">
+  {% for s in sugestoes %}
+  <li class="list-group-item">
+    <h5>{{ s.name }} <small class="text-muted">({{ (s.probability * 100) | round(2) }}% de certeza)</small> </h5>
+
+    {% if s.similar_images %}
+    <div class="row mt-3">
+      {% for img in s.similar_images %}
+      <div class="col-md-3 text-center mb-3">
+        <img src="{{ img.url_small }}" class="img-fluid rounded" alt="Imagem semelhante">
+        <p class="small text-muted">
+          Similaridade: {{ (img.similarity * 100) | round(1) }}%<br>
+          {{ img.citation }}<br>
+          <a href="{{ img.license_url }}" target="_blank">{{ img.license_name }}</a>
+
+        </p>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>Nenhuma sugestão encontrada.</p>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% if curiosidades %}
+<h2>Ocorrências para "{{ nome }}"</h2>
+
+
+<ul>
+    {% for o in range(0,5) %}
+    <li>
+        <p><strong>Data e Local</strong></p>
+        {{ curiosidades[o].local or 'Localização desconhecida' }}-
+        ({{ curiosidades[o].latitude }}, {{ curiosidades[o].longitude }})-
+        {{ curiosidades[o].data or 'Data desconhecida' }}
+
+    </li>
+    <li>
+        <p><strong>Taxonomia</strong></p>
+        <strong>Classe:</strong><i>{{ curiosidades[o].classe }}</i><br>
+        <strong>Ordem:</strong><i>{{ curiosidades[o].ordem }}</i><br>
+        <strong>Família:</strong><i>{{ curiosidades[o].familia }}</i><br>
+    </li>
+    <li>
+        <p><strong>Informações adicionais</strong></p>
+
+        <strong>Habitat:</strong> {{ curiosidades[o].habitat or 'Habitat desconhecido' }}
+    </li>
+
+    {% if curiosidades[o].imagem %}
+    <img src="{{ curiosidades[o].imagem }}" alt="Imagem da ocorrência" width="300">
+    {% endif %}
+    {% endfor %}
+
+</ul>
+{% else %}
+  <p>Nenhuma ocorrência encontrada para "{{ nome }}".</p>
+{% endif %}
+{% endblock %}
+

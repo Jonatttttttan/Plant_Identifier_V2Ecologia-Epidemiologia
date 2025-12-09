@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Adicionar árvores</h2>
+<form method="post" enctype="multipart/form-data">
+    <p>Espécie: <input type="text" name="especie" required></p>
+    <p>Família: <input type="text" name="familia"></p>
+    <p>Nome popular: <input type="text" name="nome_popular"></p>
+    <p>Habitat: <input type="text" name="habitat" required></p>
+    <p>Localização: <input type="text" name="localizacao" placeholder="Ex: Parque Vicentina Aranha" required></p>
+    <p>Descrição: <input type="text" name="descricao" required></p>
+    <label>Situação</label><br>
+    <select name="situacao" multiple size="2">
+        <option value="em risco">Em risco de extinção</option>
+        <option value="seguro">Sem risco de extinção</option>
+    </select><br>
+    <label>Grupo</label>
+    <select name="grupo" multiple size="4">
+        <option value="planta">Planta</option>
+        <option value="artropode">Artrópodes</option>
+        <option value="animal">Animal</option>
+        <option value="outros">Outros</option>
+    </select>
+    <p>Imagem: <input type="file" name="imagens" multiple></p>
+
+    <!-- CAMPOS ESCONDIDOS DE LOCALIZAÇÃO -->
+    <input type="hidden" name="latitude" id="latitude">
+    <input type="hidden" name="longitude" id="longitude">
+
+    <p> <input type="submit" value="Adicionar" id="botao-enviar" disabled></p>
+</form>
+<a href="{{ url_for('main.index') }}">Voltar</a>
+
+
+<script>
+    const botao = document.getElementById('botao-enviar');
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        console.log('teste')
+
+        document.getElementById('latitude').value = lat;
+        document.getElementById('longitude').value = lon;
+
+        botao.disabled = false;
+        }, function(error) {
+          console.warn('Geolocalização não permitida:', error.message);
+          botao.disabled = false;
+          });
+        } else {
+            console.warn('Geolocalização não suportada neste navegador.');
+            botao.disabled = false;
+            }
+</script>
+
+
+{% endblock %}

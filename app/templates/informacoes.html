@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% if planta %}
+<h2>Informações sobre a planta {{ planta['nome_popular'] }}</h2>
+<p><strong class="d-none d-lg-block">Espécie: </strong> <i class="d-block p-2 text-bg-dark"> {{ planta['especie'] }}</i></p>
+<p><strong>Família: </strong> <i class="d-block p-2 text-bg-dark"> {{ planta['familia'] }}</i></p>
+<p><strong class="d-block p-2 text-bg-dark">Nome Popular: {{ planta['nome_popular'] }}</strong></p>
+<p><strong class="d-block p-2 text-bg-dark">Habitat: {{ planta['habitat'] }}</strong></p>
+
+<h3>Curiosidades:</h3>
+{% if curiosidades %}
+<div class="card mt-4">
+    <div class="card-header">Curiosidades (Fonte: Wikipédia)</div>
+    <div class="card-body">
+        {% if curiosidades.thumbnail %}
+          <img src="{{ curiosidades.thumbnail.source }}" class="img-fluid mb-2" style="max-wigth:200px;">
+        {% endif %}
+        <p>{{ curiosidades.extracy }}</p>
+        <a href="{{ curiosidades.content_urls.desktop.page }}" target="_blank" class="btn btn-primary btn-sm">Ver mais na Wikipédia</a>
+        <p><strong>Informações:</strong> {{ curiosidades.extract }}</p>
+    </div>
+</div>
+{% else %}
+  <p>Nenhuma curiosidade encontrada na Wikipédia.</p>
+{% endif %}
+
+<H3>Imagens:</H3>
+{% for imagem in imagens %}
+<figure>
+<img src="{{ url_for('static', filename= 'uploads/' + imagem['imagem'] ) }}" class="rounded float-start figure-img img-fluid rounded w-25 p-3" alt="Imagem da planta" width="200">
+    <figcaption>Está é uma foto da {{ planta['nome_popular'] }}</figcaption>
+</figure>
+{% endfor %}
+
+
+{% else %}
+<h3>Não há planta para exibir</h3>
+{% endif %}
+
+<h5>Comentários</h5>
+{% for c in comentarios %}
+<div class="card my-2 p-2">
+    <strong>{{ c.nome }}</strong> <small class="text-muted">{{ c.data }}</small>
+    <p>{{ c.texto }}</p>
+</div>
+{% endfor %}
+
+<form method="post" action="{{ url_for('main.comentar', especie_id=planta.id) }}">
+    <div class="mb-3">
+        <textarea name="comentario" class="form-control" rows="3" required placeholder="Digite seu comentário..."></textarea>
+
+    </div>
+    <button type="submit" class="btn btn-primary">Comentar</button>
+</form>
+<a href="{{ url_for('main.index') }}" class="link-offset-2 link-underline link-underline-opacity-10">Voltar</a>
+
+{% endblock %}

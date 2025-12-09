@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+<h2 class="text-center mb-4">Resultado da Identificação</h2>
+  <div class="card mb-4 shadow-sm">
+    <div class="card-body">
+      <h5 class="card-title">🌿 Espécie Identificada</h5>
+      <p><strong>Espécie:</strong>{{ especie }}</p>
+      <p><strong>Descrição:</strong>{{ descricao }}</p>
+      <img src="{{ url_for('static', filename='uploads/' + imagem.split('/')[-1]) }}" alt="Planta identificada" width="300">
+    </div>
+  </div>
+  <div class="card mb-4 shadow-sm">
+    <div class="card-body">
+      <h5 class="card-title">📍 Localização da Coleta</h5>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item"><strong>Município:</strong>{{ nome_municipio }}</li>
+        <li class="list-group-item"><strong>Estado:</strong>{{ estado_nome }}</li>
+        <li class="list-group-item"><strong>Região:</strong>{{ regiao_nome }}</li>
+        <li class="list-group-item"><strong>Código IBGE:</strong>{{ cod_ibge }}</li>
+
+
+      </ul>
+    </div>
+  </div>
+</div>
+<a href="{{ url_for('identificar.identificar') }}">Nova identificação</a>
+
+<div class="text-muted text-center mt-4">
+  <small>Identificação fornecida por <a href="https://plant.id" target="_blank">Plant.id</a></small>
+</div>
+
+{% endblock %}

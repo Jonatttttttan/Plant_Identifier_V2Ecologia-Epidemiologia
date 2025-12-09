@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    /* Área principal com fundo laranja */
+    .ecologia-container {
+        background-color: #ff8c42; /* laranja suave */
+        padding: 80px 20px;
+        text-align: center;
+        border-radius: 12px;
+        color: white;
+    }
+
+    .ecologia-title {
+        font-size: 3rem;
+        font-weight: bold;
+    }
+</style>
+
+<div class="ecologia-container">
+    <h1 class="ecologia-title">❃ Ecologia ❃</h1>
+</div>
+<div>
+    <a class="navbar-brand" href="{{ url_for('main.clima') }}">🌿 Verificar Clima</a>
+</div>
+<div>
+    <a class="navbar-brand" href="{{ url_for('main.clima_intervalo') }}">🌿 Verificar Clima Intervalo</a>
+</div>
+
+{% endblock %}

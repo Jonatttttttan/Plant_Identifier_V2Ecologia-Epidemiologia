@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<form method="POST" enctype="multipart/form-data">
+    <label>Envie a imagem do cogumelo:</label>
+    <input type="file" name="imagem" accept="image/*" required>
+    <button type="submit">Identificar</button>
+
+</form>
+
+{% endblock %}

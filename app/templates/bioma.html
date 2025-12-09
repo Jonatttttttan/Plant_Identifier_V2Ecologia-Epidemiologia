@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4" style="max-width: 500px;">
+    <h2 class="text-center mb-4">Consultar Bioma</h2>
+
+    <form method="POST" class="card p-4 shadow-sm">
+
+        <div class="mb-3">
+            <label class="form-label">Latitude</label>
+            <input type="text" name="latitude" class="form-control" placeholder="-15.8" required>
+
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Longitude</label>
+            <input type="text" name="longitude" class="form-control" placeholder="-47.9" required>
+
+        </div>
+        <button class="btn btn-primary w-100">Consultar Bioma</button>
+
+
+
+    </form>
+    {% if erro %}
+    <div class="alert alert-danger mt-4">{{ erro }}</div>
+    {% endif %}
+
+    {% if bioma %}
+    <div class="alert alert-success mt-4 text-center">
+        <strong>Bioma identificado:</strong>{{ bioma }}
+    </div>
+    {% endif %}
+
+
+</div>
+{% endblock %}

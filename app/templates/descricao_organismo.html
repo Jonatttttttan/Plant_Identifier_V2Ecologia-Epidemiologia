@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Descrição de Animal ou Planta</h2>
+
+<form method="post">
+    <input type="text" name="nome" placeholder="Digite o nome do organismo" required>
+    <button type="submit">Buscar</button>
+</form>
+
+{% if erro %}
+  <p style="color:red;">Erro: {{ erro }}</p>
+{% endif %}
+
+{% if descricao %}
+  <h3>Resultado:</h3>
+  <p>{{ descricao|safe }}</p>
+{% endif %}
+
+{% if cont > 2 %}
+{% for o in range(0, 5) %}
+  {% if ocorrencias[o].imagem %}
+    <img src="{{ ocorrencias[o].imagem }}" alt="Imagem da ocorrência" width="300">
+  {% endif %}
+{% endfor %}
+{% endif %}
+
+
+{% endblock %}
+

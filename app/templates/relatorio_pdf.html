@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        h1 { text-align: center; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid black; padding: 4px; text-align: left; }
+    </style>
+</head>
+<body>
+
+
+<h1>Relatório de Identificação</h1>
+<ul>
+    {% for item in dados %}
+    <li><strong>Nome Popular:</strong>{{ item.nome_popular }} - <strong>Espécie:</strong><i>{{ item.especie }}</i> - <strong>Família:</strong><i>{{ item.familia }}</i>
+      {% for imagem in imagens %}
+
+          <p>Teste {{caminho + imagem['imagem']}}</p>
+          <img src="{{caminho+ imagem['imagem']}}" class="rounded float-start figure-img img-fluid rounded w-25 p-3" width="200">
+        {% endif %}
+        {% endfor %}
+
+    </li>
+    {% endfor %}
+</ul>
+</body>
+</html>
