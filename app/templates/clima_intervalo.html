@@ -6,66 +6,59 @@
   <h2 class="text-center mb-4">Histórico de Temperaturas (Open-Meteo)</h2>
 
   <form method="POST" class="card p-4 shadow-sm mb-4">
-    <div class="row g-3">
-      <div class="col-md-6">
-        <label class="form-label">Latitude</label>
-        <input
-          type="text"
-          name="latitude"
-          class="form-control"
-          placeholder="-15.8"
-          value="{{ latitude or '' }}"
-          required
-        >
-      </div>
-      <div class="col-md-6">
-        <label class="form-label">Longitude</label>
-        <input
-          type="text"
-          name="longitude"
-          class="form-control"
-          placeholder="-47.9"
-          value="{{ longitude or '' }}"
-          required
-        >
-      </div>
-      <div class="col-md-6">
-        <label class="form-label">Ano inicial</label>
-        <input
-          type="number"
-          name="ano_inicio"
-          class="form-control"
-          placeholder="2015"
-          value="{{ ano_inicio or '' }}"
-          min="1950"
-          max="2100"
-          required
-        >
-      </div>
-      <div class="col-md-6">
-        <label class="form-label">Ano final</label>
-        <input
-          type="number"
-          name="ano_fim"
-          class="form-control"
-          placeholder="2024"
-          value="{{ ano_fim or '' }}"
-          min="1950"
-          max="2100"
-          required
-        >
-      </div>
-      <div class="col-md-6">
-        <label class="form-label">Frequência</label>
-        <select name="frequencia" class="form-select">
-          <option value="mensal" {{ 'selected' if frequencia == 'mensal' }}>Mensal</option>
-          <option value="semanal" {{ 'selected' if frequencia == 'semanal' }}>Semanal</option>
-        </select>
-      </div>
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label">Cidade</label>
+      <select name="cidade" class="form-select" required>
+        <option value="">-- Selecione uma cidade --</option>
+        {% for nome, coords in cidades.items() %}
+          <option value="{{ nome }}" {% if cidade_selecionada == nome %}selected{% endif %}>
+            {{ nome }}
+          </option>
+        {% endfor %}
+      </select>
     </div>
 
-    <button class="btn btn-primary w-100 mt-3">Buscar histórico</button>
-  </form>
+    <div class="col-md-3">
+      <label class="form-label">Ano inicial</label>
+      <input
+        type="number"
+        name="ano_inicio"
+        class="form-control"
+        placeholder="2020"
+        value="{{ ano_inicio or '' }}"
+        min="1950"
+        max="2100"
+        required
+      >
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Ano final</label>
+      <input
+        type="number"
+        name="ano_fim"
+        class="form-control"
+        placeholder="2024"
+        value="{{ ano_fim or '' }}"
+        min="1950"
+        max="2100"
+        required
+      >
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label">Frequência</label>
+      <select name="frequencia" class="form-select">
+        <option value="mensal" {{ 'selected' if frequencia == 'mensal' }}>Mensal</option>
+        <option value="semanal" {{ 'selected' if frequencia == 'semanal' }}>Semanal</option>
+      </select>
+    </div>
+  </div>
+
+  <button class="btn btn-primary w-100 mt-3">Buscar histórico</button>
+</form>
+
 
   {% if erro %}
   <div class="alert alert-danger">{{ erro }}</div>
@@ -80,30 +73,7 @@
       </h5>
 
       <!-- TABELA (opcional, pode remover se quiser só o gráfico) -->
-      <table class="table table-sm table-striped mb-0">
-        <thead>
-          <tr>
-            <th>Ano</th>
-            <th>{{ 'Mês' if frequencia == 'mensal' else 'Semana' }}</th>
-            <th>Temperatura média (°C)</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for row in dados %}
-          <tr>
-            <td>{{ row.ano }}</td>
-            <td>{{ row.indice }}</td>
-            <td>
-              {% if row.temperatura_media is not none %}
-                {{ row.temperatura_media | round(2) }}
-              {% else %}
-                -
-              {% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+
     </div>
   </div>
 

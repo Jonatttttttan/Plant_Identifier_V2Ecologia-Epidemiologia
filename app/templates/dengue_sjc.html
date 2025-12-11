@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 900px;">
+
+  <h2 class="text-center mb-4">Dengue - São José dos Campos</h2>
+
+  {% if erro %}
+    <div class="alert alert-danger">{{ erro }}</div>
+  {% endif %}
+
+  {% if dados_por_ano %}
+    <p class="text-muted">
+      Casos semanais de dengue por ano (dados da sua planilha).
+    </p>
+
+    {% for ano, serie in dados_por_ano|dictsort %}
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h5 class="card-title mb-3">
+            Casos de dengue por semana – {{ ano }}
+          </h5>
+          <canvas id="chart-dengue-{{ ano }}" height="120"></canvas>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>Nenhum dado encontrado.</p>
+  {% endif %}
+
+</div>
+
+{% if dados_por_ano %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // dados_por_ano vem do Flask como JSON
+    const dadosPorAnoDengue = {{ dados_por_ano|tojson }};
+
+    Object.keys(dadosPorAnoDengue).forEach(ano => {
+      const serie = dadosPorAnoDengue[ano];
+      const semanas = serie.semanas;
+      const casos = serie.casos;
+
+      const ctx = document.getElementById('chart-dengue-' + ano);
+      if (!ctx) return;
+
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: semanas,
+          datasets: [{
+            label: 'Casos de dengue - ' + ano,
+            data: casos,
+            tension: 0.2
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Semana epidemiológica'
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'Casos'
+              },
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    });
+  </script>
+{% endif %}
+{% endblock %}

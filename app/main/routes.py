@@ -18,11 +18,18 @@ from ..utils.api_control import can_call_api, oncrement_api_usage, log_api_usage
 from ..utils.wikipedia import buscar_curiosidades_wikipedia as wiki
 from ..utils.takon_key import buscar_ocorrencias_gbif, buscar_takonkey_gbif
 from ..services.service import ecologia_home, home
+from ..services.dengue import dengue
 #pip install xhtml2pdf
 
 from ..services.mapbiomas_service import obter_clima_atual, obter_temperatura_intervalo
 
 
+CIDADES = {
+    "São Paulo - SP": {"lat": -23.55, "lon": -46.63},
+    "Rio de Janeiro - RJ": {"lat": -22.90, "lon": -43.20},
+    "Brasília - DF": {"lat": -15.79, "lon": -47.88},
+    "São José dos Campos - SP": {"lat": -23.1791, "lon": -45.8869}
+}
 
 main_bp = Blueprint('main', __name__)
 
@@ -418,31 +425,41 @@ def clima_intervalo():
     dados = None
     dados_por_ano = {}
     erro = None
-    lat_val = lon_val = ano_ini_val = ano_fim_val = freq_val = None
+    cidade_selecionada = None
+    ano_ini_val = None
+    ano_fim_val = None
+    freq_val = "mensal"
+
+
 
     if request.method == "POST":
-        lat = request.form.get("latitude", "").strip()
-        lon = request.form.get("longitude", "").strip()
+        cidade_selecionada = request.form.get('cidade', '').strip()
+
         ano_inicio = request.form.get("ano_inicio", "").strip()
         ano_fim = request.form.get("ano_fim", "").strip()
         frequencia = request.form.get("frequencia", "Semanal")
 
-        lat_val, lon_val = lat, lon
         ano_ini_val, ano_fim_val = ano_inicio, ano_fim
+
+
+
         freq_val = frequencia
 
-        if not lat or not lon or not ano_inicio or not ano_fim:
-            erro = "Informe latitude, longitude, ano inicial e ano final"
+        if not cidade_selecionada or cidade_selecionada not in CIDADES:
+            erro = "Selecione uma cidade válida"
+        elif not ano_inicio or not ano_fim:
+            erro = "Informe o ano inicial e o ano final"
         else:
             try:
-                latitude = float(lat.replace(",", "."))
-                longitude = float(lon.replace(",", "."))
                 ano_i = int(ano_inicio)
                 ano_f = int(ano_fim)
 
                 if ano_f < ano_i:
                     erro = "O ano final deve ser maior ou igual ao ano inicial"
                 else:
+                    coords = CIDADES[cidade_selecionada]
+                    latitude = coords["lat"]
+                    longitude = coords["lon"]
                     dados = obter_temperatura_intervalo(latitude, longitude, ano_i, ano_f, freq_val)
                     if dados is None:
                         erro = "Não foi possível obter os dados de temperatura"
@@ -466,9 +483,39 @@ def clima_intervalo():
         dados = dados,
         dados_por_ano=dados_por_ano,
         erro = erro,
-        latitude = lat_val,
-        longitude = lon_val,
+        cidade_selecionada=cidade_selecionada,
+        cidades = CIDADES,
         ano_inicio = ano_ini_val,
         ano_fim = ano_fim_val,
         frequencia = freq_val or "Semanal",
     )
+
+@main_bp.route("/dengue_sjc")
+@login_required
+def dengue_sjc():
+    erro = None
+    dados_por_ano = {}
+
+    try:
+        dados_raw = dengue()
+
+        for ano, df in dados_raw.items():
+            semanas = df["data_iniSE"].tolist()[::-1]
+            casos = df["casos"].tolist()[::-1]
+
+            dados_por_ano[int(ano)] = {
+                "semanas": semanas,
+                "casos": casos,
+            }
+    except Exception as e:
+        erro = f"Erro ao carregar dados de dengue: {e}"
+
+    return render_template(
+        "dengue_sjc.html",
+        erro=erro,
+        dados_por_ano=dados_por_ano,
+    )
+
+
+
+
