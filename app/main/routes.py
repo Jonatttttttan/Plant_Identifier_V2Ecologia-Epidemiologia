@@ -22,6 +22,7 @@ from ..services.dengue import dengue
 #pip install xhtml2pdf
 
 from ..services.mapbiomas_service import obter_clima_atual, obter_temperatura_intervalo
+from ..services.clima_service import obter_precipitacao_intervalo
 
 
 CIDADES = {
@@ -516,6 +517,75 @@ def dengue_sjc():
         dados_por_ano=dados_por_ano,
     )
 
+@main_bp.route("/chuva_intervalo", methods=["GET", "POST"])
+@login_required
+def chuva_intervalo():
+    dados = None
+    dados_por_ano = {}
+    erro = None
 
+    cidade_selecionada = None
+    ano_ini_val = None
+    ano_fim_val = None
+    freq_val = "mensal"
+
+    if request.method == "POST":
+        cidade_selecionada = request.form.get("cidade", '').strip()
+        ano_inicio = request.form.get("ano_inicio", "").strip()
+        ano_fim = request.form.get("ano_fim", "").strip()
+        frequencia = request.form.get("frequencia", "mensal")
+
+        ano_ini_val, ano_fim_val = ano_inicio, ano_fim
+        freq_val = frequencia
+
+        if not cidade_selecionada or cidade_selecionada not in CIDADES:
+            erro = "Selecione uma cidade válida"
+        elif not ano_inicio or not ano_fim:
+            erro = "Informe o ano inicial e o ano final"
+        else:
+            try:
+                ano_i = int(ano_inicio)
+                ano_f = int(ano_fim)
+
+                if ano_f < ano_i:
+                    erro = "O ano final deve ser maior ou igual ao ano inicial"
+                else:
+                    coords = CIDADES[cidade_selecionada]
+                    latitude = coords["lat"]
+                    longitude = coords["lon"]
+
+                    dados = obter_precipitacao_intervalo(
+                        latitude,
+                        longitude,
+                        ano_i,
+                        ano_f,
+                        frequencia=frequencia,
+                    )
+                    if dados is None:
+                        erro = "Não foi possível obter os dados de precipitação"
+                    else:
+                        for row in dados:
+                            ano = row["ano"]
+                            if ano not in dados_por_ano:
+                                dados_por_ano[ano] = {
+                                    "indices": [],
+                                    "chuva_mm": [],
+                                }
+                            if row["chuva_mm"] is not None:
+                                dados_por_ano[ano]["indices"].append(row["indice"])
+                                dados_por_ano[ano]["chuva_mm"].append(row["chuva_mm"])
+            except ValueError:
+                erro = "Anos inválidos. Use apenas números"
+    return render_template(
+        "chuva_intervalo.html",
+        dados = dados,
+        dados_por_ano = dados_por_ano,
+        erro = erro,
+        cidade_selecionada = cidade_selecionada,
+        cidades = CIDADES,
+        ano_inicio = ano_ini_val,
+        ano_fim = ano_fim_val,
+        frequencia = freq_val
+    )
 
 

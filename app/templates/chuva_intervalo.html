@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 900px;">
+
+  <h2 class="text-center mb-4">Histórico de Precipitação (Open-Meteo)</h2>
+
+  <form method="POST" class="card p-4 shadow-sm mb-4">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Cidade</label>
+        <select name="cidade" class="form-select" required>
+          <option value="">-- Selecione uma cidade --</option>
+          {% for nome, coords in cidades.items() %}
+            <option value="{{ nome }}" {% if cidade_selecionada == nome %}selected{% endif %}>
+              {{ nome }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Ano inicial</label>
+        <input
+          type="number"
+          name="ano_inicio"
+          class="form-control"
+          placeholder="2020"
+          value="{{ ano_inicio or '' }}"
+          min="1950"
+          max="2100"
+          required
+        >
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Ano final</label>
+        <input
+          type="number"
+          name="ano_fim"
+          class="form-control"
+          placeholder="2024"
+          value="{{ ano_fim or '' }}"
+          min="1950"
+          max="2100"
+          required
+        >
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Frequência</label>
+        <select name="frequencia" class="form-select">
+          <option value="mensal" {{ 'selected' if frequencia == 'mensal' }}>Mensal (soma no mês)</option>
+          <option value="semanal" {{ 'selected' if frequencia == 'semanal' }}>Semanal (soma na semana)</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn btn-primary w-100 mt-3">Buscar histórico</button>
+  </form>
+
+  {% if erro %}
+    <div class="alert alert-danger">{{ erro }}</div>
+  {% endif %}
+
+  {% if dados_por_ano %}
+    <p class="text-muted">
+      Precipitação acumulada (mm) por {{ 'mês' if frequencia == 'mensal' else 'semana' }}.
+    </p>
+
+    {% for ano, serie in dados_por_ano|dictsort %}
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h5 class="card-title mb-3">
+            Precipitação acumulada – {{ ano }}
+          </h5>
+          <canvas id="chart-chuva-{{ ano }}" height="120"></canvas>
+        </div>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+</div>
+
+{% if dados_por_ano %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const dadosPorAnoChuva = {{ dados_por_ano|tojson }};
+    const frequencia = "{{ frequencia }}";
+
+    Object.keys(dadosPorAnoChuva).forEach(ano => {
+      const serie = dadosPorAnoChuva[ano];
+      const indices = serie.indices;       // mês ou semana
+      const chuvaMm = serie.chuva_mm;      // mm acumulados
+
+      const ctx = document.getElementById('chart-chuva-' + ano);
+      if (!ctx) return;
+
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: indices,
+          datasets: [{
+            label: `Precipitação (${frequencia}) - ${ano}`,
+            data: chuvaMm
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: frequencia === 'semanal' ? 'Semana' : 'Mês'
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'Precipitação (mm)'
+              },
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    });
+  </script>
+{% endif %}
+{% endblock %}
