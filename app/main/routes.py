@@ -24,6 +24,8 @@ from ..services.dengue import dengue
 from ..services.mapbiomas_service import obter_clima_atual, obter_temperatura_intervalo
 from ..services.clima_service import obter_precipitacao_intervalo
 from ..services.carbono import captura_carbono
+from ..services.world_bank_service import get_world_population_series
+from ..services.worldbank_forest_service import get_forest_area_percent_series
 
 
 CIDADES = {
@@ -631,5 +633,67 @@ def carbono():
         ano_inicio = ano_inicial_val,
         ano_fim = ano_fim_val,
     )
+
+
+
+@main_bp.route("/populacao_mundial")
+@login_required
+def populacao_mundial():
+    erro = None
+    anos = []
+    populacao = []
+    pairs = []
+
+    try:
+        serie = get_world_population_series()
+        anos = serie["anos"]
+        populacao = serie["populacao"]
+
+        pairs = list(zip(anos, populacao))
+    except Exception as e:
+        erro = str(e)
+    return render_template(
+        "populacao_mundial.html",
+        erro = erro,
+        anos = serie["anos"],
+        populacao = serie["populacao"],
+        pairs = pairs,
+    )
+
+PAISES_FLORESTAS = {
+    "Brasil": "BR",
+    "Estados Unidos": "US",
+    "Indonésia": "ID",
+}
+
+@main_bp.route("/florestas", methods=["GET", "POST"])
+@login_required
+def florestas():
+    erro = None
+    pais_escolhido = request.form.get("pais") if request.method == "POST" else "BR"
+    anos = []
+    valores = []
+
+    try:
+        if pais_escolhido not in PAISES_FLORESTAS.values():
+            pais_escolhido = "BR"
+        print("o")
+        serie = get_forest_area_percent_series(pais_escolhido)
+        print("i")
+        anos = serie["anos"]
+        valores = serie["valores"]
+    except Exception as e:
+        print("exceção")
+        erro = str(e)
+
+    return render_template(
+        "florestas.html",
+        erro = erro,
+        paises = PAISES_FLORESTAS,
+        pais_escolhido = pais_escolhido,
+        anos = anos,
+        valores = valores,
+    )
+
 
 

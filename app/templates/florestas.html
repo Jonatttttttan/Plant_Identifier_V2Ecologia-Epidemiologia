@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 1000px;">
+  <h2 class="text-center mb-4">Área Florestal (% do território)</h2>
+
+  <form method="POST" class="card p-4 shadow-sm mb-4">
+    <label class="form-label">Selecione um país</label>
+    <select name="pais" class="form-select" required>
+      {% for nome, code in paises.items() %}
+        <option value="{{ code }}" {% if pais_escolhido == code %}selected{% endif %}>
+          {{ nome }}
+        </option>
+      {% endfor %}
+    </select>
+
+    <button class="btn btn-primary w-100 mt-3">Ver gráfico</button>
+  </form>
+
+  {% if erro %}
+    <div class="alert alert-danger">{{ erro }}</div>
+  {% endif %}
+
+  {% if anos and valores %}
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <canvas id="chart-florestas" height="120"></canvas>
+      </div>
+    </div>
+  {% else %}
+    <p>Nenhum dado retornado.</p>
+  {% endif %}
+</div>
+
+{% if anos and valores %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const anos = {{ anos|tojson }};
+  const valores = {{ valores|tojson }};
+
+  new Chart(document.getElementById("chart-florestas"), {
+    type: "line",
+    data: {
+      labels: anos,
+      datasets: [{
+        label: "Área florestal (% do território)",
+        data: valores,
+        tension: 0.2
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: { title: { display: true, text: "Ano" } },
+        y: {
+          title: { display: true, text: "% do território" }
+        }
+      }
+    }
+  });
+</script>
+{% endif %}
+{% endblock %}

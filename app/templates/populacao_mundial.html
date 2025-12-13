@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 1000px;">
+  <h2 class="text-center mb-4">População Mundial ao Longo dos Anos</h2>
+
+  {% if erro %}
+    <div class="alert alert-danger">{{ erro }}</div>
+  {% endif %}
+
+  {% if anos and populacao %}
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <canvas id="chart-pop" height="120"></canvas>
+      </div>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="mb-3">Tabela (amostra)</h5>
+        <div style="max-height: 320px; overflow:auto;">
+          <table class="table table-sm table-striped">
+            <thead>
+              <tr>
+                <th>Ano</th>
+                <th>População</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ano, pop in pairs %}
+              <tr>
+              <td>{{ ano }}</td>
+              <td>{{ "{:,}".format(pop).replace(",", ".") }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+
+          </table>
+          <!-- Observação: se seu Jinja não tiver zip, eu te passo uma versão alternativa -->
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <p>Nenhum dado retornado.</p>
+  {% endif %}
+</div>
+
+{% if anos and populacao %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const anos = {{ anos|tojson }};
+  const populacao = {{ populacao|tojson }};
+
+  new Chart(document.getElementById("chart-pop"), {
+    type: "line",
+    data: {
+      labels: anos,
+      datasets: [{
+        label: "População mundial (pessoas)",
+        data: populacao,
+        tension: 0.2
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: { title: { display: true, text: "Ano" } },
+        y: {
+          title: { display: true, text: "População" },
+          ticks: {
+            callback: function(value) {
+              // formata 1000000000 -> 1.000.000.000
+              return value.toLocaleString("pt-BR");
+            }
+          }
+        }
+      },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: (ctx) => " " + ctx.raw.toLocaleString("pt-BR") + " pessoas"
+          }
+        }
+      }
+    }
+  });
+</script>
+{% endif %}
+{% endblock %}
