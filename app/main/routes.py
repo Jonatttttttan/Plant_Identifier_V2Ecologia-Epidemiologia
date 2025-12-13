@@ -23,6 +23,7 @@ from ..services.dengue import dengue
 
 from ..services.mapbiomas_service import obter_clima_atual, obter_temperatura_intervalo
 from ..services.clima_service import obter_precipitacao_intervalo
+from ..services.carbono import captura_carbono
 
 
 CIDADES = {
@@ -586,6 +587,49 @@ def chuva_intervalo():
         ano_inicio = ano_ini_val,
         ano_fim = ano_fim_val,
         frequencia = freq_val
+    )
+
+@main_bp.route("/carbono", methods=["GET","POST"])
+@login_required
+def carbono():
+    erro = None
+    dados_por_ano = {}
+
+    ano_inicial_val = None
+    ano_fim_val = None
+
+    if request.method == "POST":
+        ano_inicial_val = request.form.get("ano_inicio","").strip()
+        ano_fim_val = request.form.get("ano_fim", "").strip()
+
+        if not ano_inicial_val or not ano_fim_val:
+            erro = "Informe o ano inicial e o ano final"
+        else:
+            try:
+                ano_i = int(ano_inicial_val)
+                ano_f = int(ano_fim_val)
+
+                if ano_f < ano_i:
+                    erro = "O ano final deve ser maior ou igual ao ano inicial"
+                else:
+                    dados_raw = captura_carbono(ano_i, ano_f)
+
+                    for ano, df in dados_raw.items():
+                        meses = df["month"].tolist()
+                        valores = df["average"].tolist()
+
+                        dados_por_ano[int(ano)] = {
+                            "meses": meses,
+                            "co2": valores,
+                        }
+            except Exception as e:
+                erro = f"Erro ao gerar gráficos: {e}"
+    return render_template(
+        "carbono.html",
+        erro = erro,
+        dados_por_ano = dados_por_ano,
+        ano_inicio = ano_inicial_val,
+        ano_fim = ano_fim_val,
     )
 
 
