@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 1000px;">
+  <h2 class="text-center mb-4">Derretimento do Gelo (média mensal)</h2>
+
+  <form method="POST" class="card p-4 shadow-sm mb-4">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Ano inicial (opcional)</label>
+        <input class="form-control" type="number" name="ano_inicio" value="{{ ano_inicio }}" placeholder="ex: 2000">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Ano final (opcional)</label>
+        <input class="form-control" type="number" name="ano_fim" value="{{ ano_fim }}" placeholder="ex: 2023">
+      </div>
+    </div>
+    <button class="btn btn-primary w-100 mt-3">Gerar gráficos</button>
+  </form>
+
+  {% if erro %}
+    <div class="alert alert-danger">{{ erro }}</div>
+  {% endif %}
+
+  {% if dados_por_ano %}
+    {% for ano, serie in dados_por_ano.items() %}
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h5 class="mb-3">Ano {{ ano }}</h5>
+          <canvas id="chart-gelo-{{ ano }}" height="120"></canvas>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>Nenhum dado para exibir.</p>
+  {% endif %}
+</div>
+
+{% if dados_por_ano %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const dados = {{ dados_por_ano|tojson }};
+
+  Object.keys(dados).forEach(ano => {
+    const meses = dados[ano].meses;
+    const medias = dados[ano].medias;
+
+    const canvas = document.getElementById("chart-gelo-" + ano);
+    if (!canvas) return;
+
+    new Chart(canvas, {
+      type: "line",
+      data: {
+        labels: meses,
+        datasets: [{
+          label: "Média mensal do derretimento",
+          data: medias,
+          tension: 0.25
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: { title: { display: true, text: "Mês" } },
+          y: { title: { display: true, text: "Derretimento (média)" } }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: (ctx) => (ctx.raw === null ? " sem dados" : " " + Number(ctx.raw).toFixed(4))
+            }
+          }
+        }
+      }
+    });
+  });
+</script>
+{% endif %}
+{% endblock %}

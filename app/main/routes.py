@@ -26,6 +26,7 @@ from ..services.clima_service import obter_precipitacao_intervalo
 from ..services.carbono import captura_carbono
 from ..services.world_bank_service import get_world_population_series
 from ..services.worldbank_forest_service import get_forest_area_percent_series
+from ..services.geleiras import geleiras
 
 
 CIDADES = {
@@ -695,5 +696,52 @@ def florestas():
         valores = valores,
     )
 
+def media_lista(valores):
+    if not valores:
+        return None
+    vals = [float(v) for v in valores if v is not None]
+    return (sum(vals) / len(vals)) if vals else None
 
+@main_bp.route("/gelo_derretimento", methods=["GET", "POST"])
+@login_required
+def derretimento_gelo():
+    erro = None
+
+    ano_inicio = request.form.get("ano_inicio", "").strip() if request.method == "POST" else ""
+    ano_fim = request.form.get("ano_fim", "").strip() if request.method == "POST" else ""
+
+    dados_por_ano={}
+
+    try:
+        if ano_inicio and ano_fim:
+            ai = int(ano_inicio)
+            af = int(ano_fim)
+            if af < ai:
+                raise ValueError("Ano final deve ser >= ano inicial")
+            bruto = geleiras(ai,af)
+            print("foi")
+        else:
+            bruto = geleiras()
+
+        for ano, meses_dict in bruto.items():
+            meses_ordenados = sorted(meses_dict.keys(), key=lambda m: int(m))
+            labels = []
+            medias = []
+
+            for mes in meses_ordenados:
+                labels.append(str(mes))
+                medias.append(media_lista(meses_dict.get(mes, [])))
+
+            dados_por_ano[int(ano)] = {"meses": labels, "medias": medias}
+
+        dados_por_ano = dict(sorted(dados_por_ano.items(), key=lambda x: x[0]))
+    except Exception as e:
+        erro = str(e)
+    return render_template(
+        "derretimento_gelo.html",
+        erro = erro,
+        dados_por_ano = dados_por_ano,
+        ano_inicio = ano_inicio,
+        ano_fim = ano_fim,
+    )
 
