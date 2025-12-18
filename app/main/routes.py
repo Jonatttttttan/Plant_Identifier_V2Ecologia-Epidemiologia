@@ -1,6 +1,7 @@
 from itertools import groupby
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, make_response, send_file
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, make_response, send_file, \
+    jsonify
 from flask_login import login_required, current_user
 from ..db import get_db_connection
 import os
@@ -27,6 +28,7 @@ from ..services.carbono import captura_carbono
 from ..services.world_bank_service import get_world_population_series
 from ..services.worldbank_forest_service import get_forest_area_percent_series
 from ..services.geleiras import geleiras
+from ..services.leis_service import leis
 
 
 CIDADES = {
@@ -686,7 +688,7 @@ def florestas():
     except Exception as e:
         print("exceção")
         erro = str(e)
-
+    is_brasil = (pais_escolhido == "BR")
     return render_template(
         "florestas.html",
         erro = erro,
@@ -694,6 +696,7 @@ def florestas():
         pais_escolhido = pais_escolhido,
         anos = anos,
         valores = valores,
+        is_brasil=is_brasil,
     )
 
 def media_lista(valores):
@@ -744,4 +747,15 @@ def derretimento_gelo():
         ano_inicio = ano_inicio,
         ano_fim = ano_fim,
     )
+
+@main_bp.route("/florestas/leis/<int:ano>", methods=["GET"])
+@login_required
+def florestas_leis_por_ano(ano: int):
+    try:
+        leisi = leis(ano) or []
+        leisi = [str(x).strip() for x in leisi if str(x).strip()]
+        return jsonify({"ano": ano, "leis":leisi})
+    except Exception as e:
+        return jsonify({"ano": ano, "leis": [], "erro" : str(e)}), 500
+
 

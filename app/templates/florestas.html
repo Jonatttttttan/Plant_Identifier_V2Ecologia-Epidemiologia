@@ -25,6 +25,20 @@
     <div class="card shadow-sm">
       <div class="card-body">
         <canvas id="chart-florestas" height="120"></canvas>
+          {% if is_brasil %}
+  <div class="card shadow-sm mt-4" id="leis-card" style="display:none;">
+    <div class="card-body">
+      <h5 class="mb-2">Leis ambientais em <span id="leis-ano"></span></h5>
+      <div id="leis-status" class="text-muted mb-2"></div>
+      <ul id="leis-lista" class="mb-0"></ul>
+    </div>
+  </div>
+{% else %}
+  <div class="alert alert-info mt-4">
+    Leis ambientais por ano: disponível por enquanto apenas para Brasil.
+  </div>
+{% endif %}
+
       </div>
     </div>
   {% else %}
@@ -37,8 +51,9 @@
 <script>
   const anos = {{ anos|tojson }};
   const valores = {{ valores|tojson }};
+  const isBrasil = {{ (is_brasil|tojson) }};
 
-  new Chart(document.getElementById("chart-florestas"), {
+  const chart = new Chart(document.getElementById("chart-florestas"), {
     type: "line",
     data: {
       labels: anos,
@@ -50,14 +65,55 @@
     },
     options: {
       responsive: true,
+      onClick: async (evt, elements) => {
+        if (!isBrasil) return;
+        if (!elements || elements.length === 0) return;
+
+        const idx = elements[0].index;
+        const ano = anos[idx];
+
+        const card = document.getElementById("leis-card");
+        const anoSpan = document.getElementById("leis-ano");
+        const statusDiv = document.getElementById("leis-status");
+        const ul = document.getElementById("leis-lista");
+
+        card.style.display = "block";
+        anoSpan.textContent = ano;
+        statusDiv.textContent = "Carregando...";
+        ul.innerHTML = "";
+
+        try {
+          const resp = await fetch(`/florestas/leis/${ano}`);
+          const data = await resp.json();
+
+          if (!resp.ok) {
+            statusDiv.textContent = data.erro ? data.erro : "Erro ao buscar leis.";
+            return;
+          }
+
+          const leis = data.leis || [];
+          if (leis.length === 0) {
+            statusDiv.textContent = "Nenhuma lei cadastrada para este ano (ainda).";
+            return;
+          }
+
+          statusDiv.textContent = `${leis.length} item(ns) encontrado(s):`;
+          for (const lei of leis) {
+            const li = document.createElement("li");
+            li.textContent = lei;
+            ul.appendChild(li);
+          }
+        } catch (e) {
+          statusDiv.textContent = "Falha de rede ao buscar leis.";
+        }
+      },
       scales: {
         x: { title: { display: true, text: "Ano" } },
-        y: {
-          title: { display: true, text: "% do território" }
-        }
+        y: { title: { display: true, text: "% do território" } }
       }
     }
   });
 </script>
 {% endif %}
+
 {% endblock %}
