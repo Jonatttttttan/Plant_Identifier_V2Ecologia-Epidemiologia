@@ -35,7 +35,17 @@ CIDADES = {
     "São Paulo - SP": {"lat": -23.55, "lon": -46.63},
     "Rio de Janeiro - RJ": {"lat": -22.90, "lon": -43.20},
     "Brasília - DF": {"lat": -15.79, "lon": -47.88},
-    "São José dos Campos - SP": {"lat": -23.1791, "lon": -45.8869}
+    "São José dos Campos - SP": {"lat": -23.1791, "lon": -45.8869},
+    "Belo Horizonte - MG": {"lat": -19.92, "lon": -43.94},
+    "Salvador - BA": {"lat": -12.97, "lon": -38.50},
+    "Fortaleza - CE": {"lat": -3.73, "lon": -38.52},
+    "Manaus - AM": {"lat": -3.10, "lon": -60.02},
+    "Belém - PA": {"lat": -1.45, "lon": -48.50},
+    "Porto Alegre - RS": {"lat": -30.03, "lon": -51.23},
+    "Curitiba - PR": {"lat": -25.43, "lon": -49.27},
+    "Recife - PE": {"lat": -8.05, "lon": -34.88},
+    "Goiânia - GO": {"lat": -16.68, "lon": -49.25},
+    "Campinas - SP": {"lat": -22.90, "lon": -47.06}
 }
 
 main_bp = Blueprint('main', __name__)
@@ -674,6 +684,11 @@ PAISES_FLORESTAS = {
     "Brasil": "BR",
     "Estados Unidos": "US",
     "Indonésia": "ID",
+    "Índia": "IN",
+    "Rússia": "RU",
+    "Peru": "PE",
+    "Colômbia": "CO",
+    "México": "MX",
 }
 
 # Porcentagem de área florestal e leis vigentes
