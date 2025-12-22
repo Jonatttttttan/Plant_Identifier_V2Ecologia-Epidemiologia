@@ -426,6 +426,8 @@ def clima():
             longitude=lon_val
         )
 
+
+# Intervalo de temperaturas
 @main_bp.route("/clima_intervalo", methods=["GET", "POST"])
 @login_required
 def clima_intervalo():
@@ -497,6 +499,9 @@ def clima_intervalo():
         frequencia = freq_val or "Semanal",
     )
 
+
+
+# Dengue em SJC
 @main_bp.route("/dengue_sjc")
 @login_required
 def dengue_sjc():
@@ -523,6 +528,7 @@ def dengue_sjc():
         dados_por_ano=dados_por_ano,
     )
 
+# Intervalo de precipitação
 @main_bp.route("/chuva_intervalo", methods=["GET", "POST"])
 @login_required
 def chuva_intervalo():
@@ -594,6 +600,7 @@ def chuva_intervalo():
         frequencia = freq_val
     )
 
+# Emissão global de CO2
 @main_bp.route("/carbono", methods=["GET","POST"])
 @login_required
 def carbono():
@@ -638,7 +645,7 @@ def carbono():
     )
 
 
-
+# Tamanho da população mundial
 @main_bp.route("/populacao_mundial")
 @login_required
 def populacao_mundial():
@@ -669,6 +676,7 @@ PAISES_FLORESTAS = {
     "Indonésia": "ID",
 }
 
+# Porcentagem de área florestal e leis vigentes
 @main_bp.route("/florestas", methods=["GET", "POST"])
 @login_required
 def florestas():
@@ -699,12 +707,14 @@ def florestas():
         is_brasil=is_brasil,
     )
 
+# Média para derretimento de geleiras
 def media_lista(valores):
     if not valores:
         return None
     vals = [float(v) for v in valores if v is not None]
     return (sum(vals) / len(vals)) if vals else None
 
+# Derretimento de geleiras
 @main_bp.route("/gelo_derretimento", methods=["GET", "POST"])
 @login_required
 def derretimento_gelo():
@@ -748,6 +758,7 @@ def derretimento_gelo():
         ano_fim = ano_fim,
     )
 
+# Leis ambientais brasileiras
 @main_bp.route("/florestas/leis/<int:ano>", methods=["GET"])
 @login_required
 def florestas_leis_por_ano(ano: int):
