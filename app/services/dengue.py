@@ -13,4 +13,10 @@ def dengue():
     print(dic)
     return dic
 
+def dengue_df():
+    caminho = "C:\\Users\\Nitro\\PyCharmMiscProject\\Plant_Identifier-master\\app\\dengue_2-50.csv"
+
+    df = pd.read_csv(caminho).loc[:, ["data_iniSE", "casos"]]
+    return df
+
 

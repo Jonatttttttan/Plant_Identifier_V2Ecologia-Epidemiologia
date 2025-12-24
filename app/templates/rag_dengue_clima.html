@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 1000px;">
+  <h2 class="text-center mb-4">RAG: Dengue + Clima</h2>
+
+  <form method="POST" class="card shadow-sm p-4 mb-4">
+    <label class="form-label">Pergunta</label>
+    <input class="form-control" name="question" value="{{ question }}" placeholder="Ex: Em quais anos as semanas com mais chuva tiveram mais casos?" required>
+    <button class="btn btn-primary w-100 mt-3">Perguntar</button>
+  </form>
+
+  {% if erro %}
+    <div class="alert alert-danger">{{ erro }}</div>
+  {% endif %}
+
+  {% if answer %}
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h5 class="mb-2">Resposta</h5>
+        <div style="white-space: pre-wrap;">{{ answer }}</div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if retrieved and retrieved|length > 0 %}
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="mb-3">Semanas usadas como contexto (top matches)</h5>
+        <ol class="mb-0">
+          {% for r in retrieved %}
+            <li class="mb-2">
+              <div><strong>score:</strong> {{ "%.3f"|format(r.score) }} | <strong>{{ r.meta.ano }}</strong> semana <strong>{{ r.meta.semana }}</strong></div>
+              <div class="text-muted">{{ r.text }}</div>
+            </li>
+          {% endfor %}
+        </ol>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

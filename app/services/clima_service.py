@@ -66,6 +66,7 @@ def obter_precipitacao_intervalo(
                 "chuva_mm": total_mm,
             }
         )
+
     return resultado
 
 

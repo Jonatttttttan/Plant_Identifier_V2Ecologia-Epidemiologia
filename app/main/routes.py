@@ -14,6 +14,8 @@ from dotenv import load_dotenv
 import re
 import pandas as pd
 
+
+
 #from PROJETO_PLANTAE.app.utils.api_control import can_call_api, oncrement_api_usage, log_api_usage
 from ..utils.api_control import can_call_api, oncrement_api_usage, log_api_usage
 from ..utils.wikipedia import buscar_curiosidades_wikipedia as wiki
@@ -29,6 +31,8 @@ from ..services.world_bank_service import get_world_population_series
 from ..services.worldbank_forest_service import get_forest_area_percent_series
 from ..services.geleiras import geleiras
 from ..services.leis_service import leis
+from ..services.dengue_clima_service import rag_pipeline
+from ..services.dengue import dengue_df
 
 
 CIDADES = {
@@ -783,5 +787,48 @@ def florestas_leis_por_ano(ano: int):
         return jsonify({"ano": ano, "leis":leisi})
     except Exception as e:
         return jsonify({"ano": ano, "leis": [], "erro" : str(e)}), 500
+
+
+@main_bp.route("/rag/dengue_clima", methods=["GET", "POST"])
+@login_required
+def rag_dengue_clima():
+    answer = None
+    retrieved = []
+    erro = None
+    question = ""
+
+    if request.method == "POST":
+        question = request.form.get("question", "").strip()
+        try:
+            # 1) DF dengue (você disse que dengue() retorna dict ano -> df com semana/casos,
+            # mas aqui precisamos do df com data_iniSE/casos.
+            # Ajuste: se você já tem df pronto, use diretamente.
+            # Exemplo: supondo que você tenha um df global:
+            # df_dengue = ... < coloque aqui a forma real de obter seu df com ["data_iniSE", "casos"]
+            df_dengue = dengue_df()
+
+            # 2) clima semanal (listas no formato que você mandou)
+            chuva_semanal = obter_precipitacao_intervalo(-23.1791, -45.8869, 2010, 2024, "semanal")
+            temp_semanal = obter_temperatura_intervalo(-23.1791, -45.8869, 2010, 2024, "semanal")
+
+            result = rag_pipeline(
+                df_dengue=df_dengue,
+                chuva_semanal=chuva_semanal,
+                temp_semanal=temp_semanal,
+                question=question,
+                top_k=8
+            )
+            answer = result["answer"]
+            retrieved = result["retrieved"]
+        except Exception as e:
+            erro = str(e)
+    return render_template(
+        "rag_dengue_clima.html",
+        answer=answer,
+        retrieved=retrieved,
+        erro=erro,
+        question=question,
+    )
+
 
 
