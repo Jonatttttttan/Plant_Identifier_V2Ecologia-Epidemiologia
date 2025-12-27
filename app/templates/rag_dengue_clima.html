@@ -1,42 +1,168 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container py-4" style="max-width: 1000px;">
-  <h2 class="text-center mb-4">RAG: Dengue + Clima</h2>
+<style>
+  .hero-rag {
+    background: linear-gradient(135deg, #0d6efd 0%, #20c997 100%);
+    border-radius: 16px;
+    color: white;
+    padding: 26px 22px;
+    box-shadow: 0 10px 22px rgba(0,0,0,.10);
+  }
+  .hero-rag h2 { margin: 0; font-weight: 800; }
+  .hero-rag p { margin: 6px 0 0; opacity: .95; }
 
-  <form method="POST" class="card shadow-sm p-4 mb-4">
-    <label class="form-label">Pergunta</label>
-    <input class="form-control" name="question" value="{{ question }}" placeholder="Ex: Em quais anos as semanas com mais chuva tiveram mais casos?" required>
-    <button class="btn btn-primary w-100 mt-3">Perguntar</button>
+  .card-soft {
+    border: 0;
+    border-radius: 16px;
+    box-shadow: 0 10px 22px rgba(0,0,0,.06);
+  }
+
+  .answer-box {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 14px 14px;
+    border: 1px solid rgba(0,0,0,.06);
+    white-space: pre-wrap;
+    line-height: 1.55;
+  }
+
+  .context-item {
+    border-radius: 14px;
+    border: 1px solid rgba(0,0,0,.07);
+    padding: 12px 12px;
+    background: #fff;
+  }
+
+  .badge-score {
+    font-weight: 700;
+    padding: 6px 10px;
+    border-radius: 999px;
+  }
+
+  .meta-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(13,110,253,.08);
+    color: #0d6efd;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+
+  .muted-small {
+    color: #6c757d;
+    font-size: .93rem;
+  }
+</style>
+
+<div class="container py-4" style="max-width: 1000px;">
+
+  <!-- HERO -->
+  <div class="hero-rag mb-4">
+    <div class="d-flex align-items-start justify-content-between flex-wrap gap-2">
+      <div>
+        <h2>🧠 RAG: Dengue + Clima</h2>
+        <p>Faça perguntas e receba respostas baseadas nos seus dados (casos, temperatura e precipitação).</p>
+      </div>
+      <div class="text-end muted-small" style="color: rgba(255,255,255,.85)">
+        <div>🔎 Busca semântica + contexto</div>
+        <div>📊 Semanas como evidência</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORM -->
+  <form method="POST" class="card card-soft p-4 mb-4">
+    <label class="form-label fw-semibold">Pergunta</label>
+
+    <div class="input-group">
+      <span class="input-group-text">❓</span>
+      <input
+        class="form-control"
+        name="question"
+        value="{{ question }}"
+        placeholder="Ex: Em quais anos as semanas com mais chuva tiveram mais casos?"
+        required
+      >
+      <button class="btn btn-primary px-4">Perguntar</button>
+    </div>
+
+    <div class="muted-small mt-2">
+      Dica: pergunte por <strong>anos</strong>, <strong>semanas</strong>, <strong>chuva</strong>, <strong>temperatura</strong> e <strong>picos de casos</strong>.
+    </div>
   </form>
 
+  <!-- ERROR -->
   {% if erro %}
-    <div class="alert alert-danger">{{ erro }}</div>
+    <div class="alert alert-danger card-soft">
+      <strong>Ops!</strong> {{ erro }}
+    </div>
   {% endif %}
 
+  <!-- ANSWER -->
   {% if answer %}
-    <div class="card shadow-sm mb-4">
-      <div class="card-body">
-        <h5 class="mb-2">Resposta</h5>
-        <div style="white-space: pre-wrap;">{{ answer }}</div>
+    <div class="card card-soft mb-4">
+      <div class="card-body p-4">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+          <h5 class="mb-0 fw-bold">✅ Resposta</h5>
+          {% if retrieved and retrieved|length > 0 %}
+            <span class="meta-chip">📌 usando {{ retrieved|length }} evidência(s)</span>
+          {% endif %}
+        </div>
+
+        <div class="answer-box">
+          {{ answer }}
+        </div>
+
+        <div class="muted-small mt-2">
+          Observação: a resposta é gerada com base nas semanas recuperadas como contexto.
+        </div>
       </div>
     </div>
   {% endif %}
 
+  <!-- CONTEXT -->
   {% if retrieved and retrieved|length > 0 %}
-    <div class="card shadow-sm">
-      <div class="card-body">
-        <h5 class="mb-3">Semanas usadas como contexto (top matches)</h5>
-        <ol class="mb-0">
+    <div class="card card-soft">
+      <div class="card-body p-4">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+          <h5 class="mb-0 fw-bold">📚 Evidências usadas (Top matches)</h5>
+          <span class="muted-small">Clique e copie se quiser comparar.</span>
+        </div>
+
+        <div class="row g-3">
           {% for r in retrieved %}
-            <li class="mb-2">
-              <div><strong>score:</strong> {{ "%.3f"|format(r.score) }} | <strong>{{ r.meta.ano }}</strong> semana <strong>{{ r.meta.semana }}</strong></div>
-              <div class="text-muted">{{ r.text }}</div>
-            </li>
+            <div class="col-12">
+              <div class="context-item">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
+                  <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="badge bg-primary badge-score">score {{ "%.3f"|format(r.score) }}</span>
+                    <span class="meta-chip">📅 {{ r.meta.ano }}</span>
+                    <span class="meta-chip">🗓️ semana {{ r.meta.semana }}</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary btn-sm"
+                    onclick="navigator.clipboard.writeText(`{{ r.text|e }}`)"
+                  >
+                    📋 Copiar
+                  </button>
+                </div>
+
+                <div class="muted-small" style="white-space: pre-wrap;">
+                  {{ r.text }}
+                </div>
+              </div>
+            </div>
           {% endfor %}
-        </ol>
+        </div>
+
       </div>
     </div>
   {% endif %}
+
 </div>
 {% endblock %}

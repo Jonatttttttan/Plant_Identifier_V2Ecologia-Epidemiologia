@@ -1,11 +1,75 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container py-4" style="max-width: 1000px;">
-  <h2 class="text-center mb-4">Área Florestal (% do território)</h2>
+<style>
+  /* ---------- Estilo geral ---------- */
+  .page-title {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
 
+  /* ---------- Card de leis ---------- */
+  .leis-card {
+    border-left: 6px solid #198754;
+    background: linear-gradient(135deg, #f8fff9, #ffffff);
+    animation: fadeInUp 0.4s ease-in-out;
+  }
+
+  .leis-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .leis-ano-badge {
+    background-color: #198754;
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+  }
+
+  .leis-lista li {
+    background-color: #f8f9fa;
+    border-left: 4px solid #0d6efd;
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .leis-lista li:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  /* ---------- Animação ---------- */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* ---------- Dica ---------- */
+  .hint {
+    font-size: 0.9rem;
+    color: #6c757d;
+    text-align: center;
+    margin-top: 10px;
+  }
+</style>
+
+<div class="container py-4" style="max-width: 1000px;">
+  <h2 class="text-center mb-4 page-title">🌳 Área Florestal (% do território)</h2>
+
+  <!-- Formulário -->
   <form method="POST" class="card p-4 shadow-sm mb-4">
-    <label class="form-label">Selecione um país</label>
+    <label class="form-label fw-semibold">Selecione um país</label>
     <select name="pais" class="form-select" required>
       {% for nome, code in paises.items() %}
         <option value="{{ code }}" {% if pais_escolhido == code %}selected{% endif %}>
@@ -14,7 +78,9 @@
       {% endfor %}
     </select>
 
-    <button class="btn btn-primary w-100 mt-3">Ver gráfico</button>
+    <button class="btn btn-primary w-100 mt-3">
+      📊 Ver gráfico
+    </button>
   </form>
 
   {% if erro %}
@@ -22,27 +88,38 @@
   {% endif %}
 
   {% if anos and valores %}
+    <!-- Gráfico -->
     <div class="card shadow-sm">
       <div class="card-body">
         <canvas id="chart-florestas" height="120"></canvas>
-          {% if is_brasil %}
-  <div class="card shadow-sm mt-4" id="leis-card" style="display:none;">
-    <div class="card-body">
-      <h5 class="mb-2">Leis ambientais em <span id="leis-ano"></span></h5>
-      <div id="leis-status" class="text-muted mb-2"></div>
-      <ul id="leis-lista" class="mb-0"></ul>
-    </div>
-  </div>
-{% else %}
-  <div class="alert alert-info mt-4">
-    Leis ambientais por ano: disponível por enquanto apenas para Brasil.
-  </div>
-{% endif %}
 
+        <div class="hint">
+          {% if is_brasil %}
+            Clique em um ano do gráfico para ver as leis ambientais daquele período
+          {% else %}
+            Leis ambientais disponíveis apenas para Brasil
+          {% endif %}
+        </div>
+
+        {% if is_brasil %}
+          <!-- Card de Leis -->
+          <div class="card shadow-sm mt-4 leis-card" id="leis-card" style="display:none;">
+            <div class="card-body">
+              <div class="leis-header mb-3">
+                <h5 class="mb-0">📜 Leis ambientais</h5>
+                <span class="leis-ano-badge" id="leis-ano"></span>
+              </div>
+
+              <div id="leis-status" class="text-muted mb-3"></div>
+
+              <ul id="leis-lista" class="list-unstyled leis-lista mb-0"></ul>
+            </div>
+          </div>
+        {% endif %}
       </div>
     </div>
   {% else %}
-    <p>Nenhum dado retornado.</p>
+    <p class="text-center text-muted">Nenhum dado retornado.</p>
   {% endif %}
 </div>
 
@@ -60,17 +137,18 @@
       datasets: [{
         label: "Área florestal (% do território)",
         data: valores,
-        tension: 0.2
+        tension: 0.25,
+        borderWidth: 3,
+        pointRadius: 5,
+        pointHoverRadius: 7
       }]
     },
     options: {
       responsive: true,
       onClick: async (evt, elements) => {
-        if (!isBrasil) return;
-        if (!elements || elements.length === 0) return;
+        if (!isBrasil || !elements.length) return;
 
-        const idx = elements[0].index;
-        const ano = anos[idx];
+        const ano = anos[elements[0].index];
 
         const card = document.getElementById("leis-card");
         const anoSpan = document.getElementById("leis-ano");
@@ -79,7 +157,7 @@
 
         card.style.display = "block";
         anoSpan.textContent = ano;
-        statusDiv.textContent = "Carregando...";
+        statusDiv.textContent = "🔄 Carregando leis...";
         ul.innerHTML = "";
 
         try {
@@ -87,24 +165,24 @@
           const data = await resp.json();
 
           if (!resp.ok) {
-            statusDiv.textContent = data.erro ? data.erro : "Erro ao buscar leis.";
+            statusDiv.textContent = "❌ Erro ao buscar leis.";
             return;
           }
 
           const leis = data.leis || [];
           if (leis.length === 0) {
-            statusDiv.textContent = "Nenhuma lei cadastrada para este ano (ainda).";
+            statusDiv.textContent = "Nenhuma lei cadastrada para este ano.";
             return;
           }
 
-          statusDiv.textContent = `${leis.length} item(ns) encontrado(s):`;
-          for (const lei of leis) {
+          statusDiv.textContent = `Foram encontradas ${leis.length} leis/medidas:`;
+          leis.forEach(lei => {
             const li = document.createElement("li");
             li.textContent = lei;
             ul.appendChild(li);
-          }
+          });
         } catch (e) {
-          statusDiv.textContent = "Falha de rede ao buscar leis.";
+          statusDiv.textContent = "⚠️ Falha de rede ao buscar leis.";
         }
       },
       scales: {
