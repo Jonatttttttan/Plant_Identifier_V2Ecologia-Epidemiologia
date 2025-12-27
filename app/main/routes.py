@@ -13,6 +13,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import re
 import pandas as pd
+from datetime import datetime
 
 
 
@@ -33,6 +34,8 @@ from ..services.geleiras import geleiras
 from ..services.leis_service import leis
 from ..services.dengue_clima_service import rag_pipeline
 from ..services.dengue import dengue_df
+from ..services.dengue import get_chikungunha_SJC
+from ..services.dengue import get_zikka_SJC
 
 #https://info.dengue.mat.br/services/api
 CIDADES = {
@@ -828,6 +831,66 @@ def rag_dengue_clima():
         retrieved=retrieved,
         erro=erro,
         question=question,
+    )
+
+@main_bp.route("/chikungunya_sjc")
+@login_required
+def chikungunya_sjc():
+    erro = None
+    dados_por_ano = {}
+    try:
+        dados_raw = get_chikungunha_SJC()
+
+        for ano_str, mapa_data_casos in dados_raw.items():
+            # ordena por data
+            items = sorted(
+                mapa_data_casos.items(),
+                key=lambda kv: datetime.strptime(kv[0], "%Y-%m-%d")
+            )
+
+            datas = [d for d, _ in items]
+            casos = [v for _, v in items]
+
+            dados_por_ano[int(ano_str)] = {
+                "semanas": datas, # mesmo nome usado no dengue
+                "casos" : casos
+            }
+    except Exception as e:
+        erro = f"Erro ao carregar dados: {e}"
+    return render_template(
+        "chikungunya_sjc.html",
+        erro=erro,
+        dados_por_ano = dados_por_ano,
+    )
+
+@main_bp.route("/zikka_sjc")
+@login_required
+def zikka_sjc():
+    erro = None
+    dados_por_ano = {}
+    try:
+        dados_raw = get_zikka_SJC()
+
+        for ano_str, mapa_data_casos in dados_raw.items():
+            # ordena por data
+            items = sorted(
+                mapa_data_casos.items(),
+                key=lambda kv: datetime.strptime(kv[0], "%Y-%m-%d")
+            )
+
+            datas = [d for d, _ in items]
+            casos = [v for _, v in items]
+
+            dados_por_ano[int(ano_str)] = {
+                "semanas": datas, # mesmo nome usado no dengue
+                "casos" : casos
+            }
+    except Exception as e:
+        erro = f"Erro ao carregar dados: {e}"
+    return render_template(
+        "zikka_sjc.html",
+        erro=erro,
+        dados_por_ano = dados_por_ano,
     )
 
 

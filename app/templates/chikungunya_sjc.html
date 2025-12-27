@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 1100px; margin: 0 auto; padding: 16px;">
+
+  <h2 style="margin-bottom: 8px;">Casos por semana (por ano)</h2>
+  <p style="margin-top: 0; color: #666;">
+    Visualização semanal dos casos (um gráfico por ano).
+  </p>
+
+  {% if erro %}
+    <div style="padding: 12px; border-radius: 8px; background: #ffecec; color: #8a1f1f; margin: 12px 0;">
+      <strong>Erro:</strong> {{ erro }}
+    </div>
+  {% endif %}
+
+  {% if not dados_por_ano %}
+    <div style="padding: 12px; border-radius: 8px; background: #f2f2f2; color: #333; margin: 12px 0;">
+      Nenhum dado disponível para exibir.
+    </div>
+  {% else %}
+
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 14px 0;">
+      <button type="button" id="btnExpandir"
+              style="padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc; cursor: pointer;">
+        Expandir tudo
+      </button>
+
+      <button type="button" id="btnRecolher"
+              style="padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc; cursor: pointer;">
+        Recolher tudo
+      </button>
+
+      <span style="color:#666; font-size: 14px;">
+        Dica: clique no ano para abrir/fechar o gráfico.
+      </span>
+    </div>
+
+    <div id="chartsContainer" style="display: grid; grid-template-columns: 1fr; gap: 14px;">
+      {% for ano, serie in dados_por_ano|dictsort(reverse=True) %}
+        <details class="yearBlock" open style="border: 1px solid #e5e5e5; border-radius: 12px; padding: 12px;">
+          <summary style="cursor: pointer; font-weight: 700; font-size: 16px;">
+            Ano {{ ano }} — {{ serie.casos|length }} semanas
+          </summary>
+
+          <div style="margin-top: 10px;">
+            <div style="position: relative; width: 100%; height: 360px;">
+              <canvas id="chart_{{ ano }}"></canvas>
+            </div>
+          </div>
+        </details>
+      {% endfor %}
+    </div>
+
+  {% endif %}
+</div>
+
+<!-- Chart.js (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<script>
+  // Dados vindos do Flask/Jinja:
+  const dadosPorAno = {{ dados_por_ano | tojson | safe }};
+
+  // Guard para o caso de não ter dados
+  if (dadosPorAno && Object.keys(dadosPorAno).length > 0) {
+
+    // Cria um gráfico por ano
+    Object.keys(dadosPorAno).forEach((ano) => {
+      const ctx = document.getElementById(`chart_${ano}`);
+      if (!ctx) return;
+
+      const semanas = dadosPorAno[ano]["semanas"] || [];
+      const casos = dadosPorAno[ano]["casos"] || [];
+
+      // Se quiser diminuir o texto do eixo X, pode usar só "MM-DD"
+      // const labels = semanas.map(d => d.slice(5)); // "12-26"
+      const labels = semanas;
+
+      new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [{
+            label: `Casos - ${ano}`,
+            data: casos,
+            tension: 0.25,
+            pointRadius: 0,
+            borderWidth: 2,
+            fill: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: "index", intersect: false },
+          plugins: {
+            legend: { display: true },
+            tooltip: { enabled: true }
+          },
+          scales: {
+            x: {
+              ticks: {
+                autoSkip: true,
+                maxTicksLimit: 12
+              }
+            },
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: "Casos" }
+            }
+          }
+        }
+      });
+    });
+  }
+
+  // Expandir/Recolher todos
+  const btnExpandir = document.getElementById("btnExpandir");
+  const btnRecolher = document.getElementById("btnRecolher");
+  const blocks = document.querySelectorAll(".yearBlock");
+
+  if (btnExpandir) {
+    btnExpandir.addEventListener("click", () => {
+      blocks.forEach(b => b.open = true);
+    });
+  }
+
+  if (btnRecolher) {
+    btnRecolher.addEventListener("click", () => {
+      blocks.forEach(b => b.open = false);
+    });
+  }
+</script>
+{% endblock %}

@@ -40,6 +40,8 @@
         box-shadow: 0 6px 18px rgba(0,0,0,0.08);
         transition: all 0.25s ease;
         border-left: 6px solid #4caf50;
+        display: block;
+        position: relative;
     }
 
     .eco-card:hover {
@@ -67,6 +69,127 @@
     .eco-icon {
         font-size: 1.6rem;
     }
+
+    /* === Dropdown Arboviroses === */
+    .eco-dropdown {
+        position: relative;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    /* botão "fantasma" para parecer um card clicável */
+    .eco-dropdown .eco-card-title {
+        margin: 0 0 8px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1.3rem;
+        font-weight: 600;
+    }
+
+    .eco-dropdown .eco-card-subtitle {
+        font-size: 0.95rem;
+        color: #666;
+        margin: 0;
+    }
+
+    .eco-dropdown .dropdown-hint {
+        margin-top: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        border: 1px solid #e6e6e6;
+        font-size: 0.9rem;
+        color: #333;
+        background: #fafafa;
+    }
+
+    .eco-dropdown .caret {
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+
+    .eco-dropdown-menu {
+        position: absolute;
+        left: 20px;
+        right: 20px;
+        top: calc(100% - 10px);
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 16px 32px rgba(0,0,0,0.18);
+        border: 1px solid #eee;
+        padding: 10px;
+        display: none;
+        z-index: 50;
+    }
+
+    /* abre ao passar o mouse (desktop) */
+    .eco-dropdown:hover .eco-dropdown-menu {
+        display: block;
+    }
+
+    /* itens */
+    .eco-dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        text-decoration: none;
+        color: #222;
+        transition: background 0.18s ease;
+        font-size: 0.95rem;
+    }
+
+    .eco-dropdown-item:hover {
+        background: #f3f8f3;
+        text-decoration: none;
+        color: #111;
+    }
+
+    .eco-dropdown-badge {
+        font-size: 0.8rem;
+        padding: 4px 8px;
+        border-radius: 999px;
+        border: 1px solid #e6e6e6;
+        color: #333;
+        background: #fafafa;
+        margin-left: auto;
+    }
+
+    /* Mobile: abre com clique (JS adiciona .open) */
+    .eco-dropdown.open .eco-dropdown-menu {
+        display: block;
+    }
+    /* garante que os cards não se sobreponham ao dropdown */
+    .eco-grid {
+  position: relative;
+  z-index: 1;
+}
+
+/* este card precisa estar "acima" quando aberto/hover */
+.eco-dropdown {
+  position: relative;
+  z-index: 10;
+}
+
+/* quando abrir, sobe ainda mais */
+.eco-dropdown:hover,
+.eco-dropdown.open {
+  z-index: 9999;
+}
+
+/* o menu precisa ter z-index alto e posição correta */
+.eco-dropdown-menu {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  top: calc(100% - 10px);
+  z-index: 10000;
+}
+
 </style>
 
 <!-- Header -->
@@ -95,10 +218,30 @@
         <p>Histórico de chuvas por período.</p>
     </a>
 
-    <a href="{{ url_for('main.dengue_sjc') }}" class="eco-card">
-        <h3><span class="eco-icon">🦟</span> Dengue (SJC)</h3>
-        <p>Casos históricos e análise epidemiológica.</p>
-    </a>
+    <!-- ✅ CARD ÚNICO + DROPDOWN -->
+    <div class="eco-card eco-dropdown" id="arbovirosesSJC">
+        <h3 class="eco-card-title">
+            <span class="eco-icon">🦟</span> Arboviroses (SJC)
+        </h3>
+        <p class="eco-card-subtitle">Selecione Dengue, Chikungunya ou Zika para São José dos Campos.</p>
+
+        <div class="dropdown-hint">
+            <span>Selecionar doença</span>
+            <span class="caret">▾</span>
+        </div>
+
+        <div class="eco-dropdown-menu" aria-label="Arboviroses SJC">
+            <a class="eco-dropdown-item" href="{{ url_for('main.dengue_sjc') }}">
+                Dengue <span class="eco-dropdown-badge">SJC</span>
+            </a>
+            <a class="eco-dropdown-item" href="{{ url_for('main.chikungunya_sjc') }}">
+                Chikungunya <span class="eco-dropdown-badge">SJC</span>
+            </a>
+            <a class="eco-dropdown-item" href="{{ url_for('main.zikka_sjc') }}">
+                Zika <span class="eco-dropdown-badge">SJC</span>
+            </a>
+        </div>
+    </div>
 
     <a href="{{ url_for('main.carbono') }}" class="eco-card">
         <h3><span class="eco-icon">🌫️</span> Carbono Atmosférico</h3>
@@ -119,11 +262,37 @@
         <h3><span class="eco-icon">🧊</span> Derretimento de Gelo</h3>
         <p>Variações anuais e mensais das geleiras.</p>
     </a>
-     <a href="{{ url_for('main.rag_dengue_clima') }}" class="eco-card">
-        <h3><span class="eco-icon">🧊</span>RAG dengue São José dos Campos</h3>
-        <p>RAG de dengue.</p>
+
+    <a href="{{ url_for('main.rag_dengue_clima') }}" class="eco-card">
+        <h3><span class="eco-icon">🧠</span> RAG Dengue (SJC)</h3>
+        <p>RAG de dengue com clima.</p>
     </a>
 
 </div>
 
+<script>
+  // Para mobile: abre/fecha com clique (hover não existe bem)
+  (function() {
+    const box = document.getElementById("arbovirosesSJC");
+    if (!box) return;
+
+    box.addEventListener("click", function(e) {
+      // Se clicou em um link dentro do menu, deixa navegar
+      const isLink = e.target.closest("a");
+      if (isLink) return;
+
+      // Caso contrário, alterna abrir/fechar
+      box.classList.toggle("open");
+    });
+
+    // Fecha se clicar fora
+    document.addEventListener("click", function(e) {
+      if (!box.contains(e.target)) {
+        box.classList.remove("open");
+      }
+    });
+  })();
+</script>
+
 {% endblock %}
+
