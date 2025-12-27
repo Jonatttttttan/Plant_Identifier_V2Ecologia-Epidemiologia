@@ -34,7 +34,7 @@ from ..services.leis_service import leis
 from ..services.dengue_clima_service import rag_pipeline
 from ..services.dengue import dengue_df
 
-
+#https://info.dengue.mat.br/services/api
 CIDADES = {
     "São Paulo - SP": {"lat": -23.55, "lon": -46.63},
     "Rio de Janeiro - RJ": {"lat": -22.90, "lon": -43.20},
